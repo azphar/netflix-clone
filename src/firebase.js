@@ -1,4 +1,3 @@
-// src/firebase.js
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
@@ -8,7 +7,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   updateProfile,
-} from "firebase/auth"; // <— NOT "firebase/auth/web-extension"
+} from "firebase/auth"; 
 import { getFirestore, addDoc, collection } from "firebase/firestore";
 import { toast } from "react-toastify";
 
@@ -25,7 +24,6 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// keep session after refresh
 setPersistence(auth, browserLocalPersistence).catch(console.error);
 
 export async function signup(name, email, password) {
