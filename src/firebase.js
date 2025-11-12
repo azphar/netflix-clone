@@ -1,6 +1,15 @@
+// src/firebase.js
 import { initializeApp } from "firebase/app";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, getAuth } from "firebase/auth/web-extension";
-import { addDoc, collection, getFirestore } from "firebase/firestore";
+import {
+  getAuth,
+  setPersistence,
+  browserLocalPersistence,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  updateProfile,
+} from "firebase/auth"; // <— NOT "firebase/auth/web-extension"
+import { getFirestore, addDoc, collection } from "firebase/firestore";
 import { toast } from "react-toastify";
 
 const firebaseConfig = {
@@ -9,40 +18,50 @@ const firebaseConfig = {
   projectId: "netflix-clone-4d759",
   storageBucket: "netflix-clone-4d759.firebasestorage.app",
   messagingSenderId: "656992423047",
-  appId: "1:656992423047:web:09d5c08ed611a8edacfc22"
+  appId: "1:656992423047:web:09d5c08ed611a8edacfc22",
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
 
-const signup = async (email, password)=>{
-    try {
-        const res = await createUserWithEmailAndPassword(auth, email, password);
-        const user = res.user; 
-        await addDoc(collection(db, "user"), {
-            uid: user.uid,
-            name,
-            authProvider: "local",
-            email,
-        });
-    } catch (error) {
-        console.log(error);
-        toast.error(error.code.split('/')[1].split('-').join(" "));
-    }
+// keep session after refresh
+setPersistence(auth, browserLocalPersistence).catch(console.error);
+
+export async function signup(name, email, password) {
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    if (name) await updateProfile(cred.user, { displayName: name });
+    await addDoc(collection(db, "users"), {
+      uid: cred.user.uid,
+      name: name || "",
+      authProvider: "local",
+      email,
+    });
+  } catch (error) {
+    console.error(error);
+    toast.error(error.code?.split("/")[1]?.split("-").join(" ") || "signup failed");
+    throw error;
+  }
 }
 
-const login = async (email, password)=>{
-    try {
-       await signInWithEmailAndPassword(auth, email, password);
-    } catch (error) {
-        console.log(error);
-        toast.error(error.code.split('/')[1].split('-').join(" "));
-    }
+export async function login(email, password) {
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (error) {
+    console.error(error);
+    toast.error(error.code?.split("/")[1]?.split("-").join(" ") || "login failed");
+    throw error;
+  }
 }
 
-const logout = ()=>{
-    signOut(auth);
+export async function logout() {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error(error);
+    toast.error("sign out failed");
+    throw error;
+  }
 }
 
-export {auth, db, login, signup, logout};

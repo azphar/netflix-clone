@@ -2,46 +2,24 @@ import React, { Component } from 'react';
 import './Navbar.css';
 import logo from '../../assets/logo.png';
 import { Link } from 'react-router-dom';
-import { signOut } from 'firebase/auth';
-import { auth } from '../../firebase'; // match your Login.jsx import
+import { logout } from '../../firebase'; 
 
 class Navbar extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      navDark: false,
-    };
-
+    this.state = { navDark: false };
     this.handleScroll = this.handleScroll.bind(this);
-    this.handleSignOut = this.handleSignOut.bind(this);
   }
 
   componentDidMount() {
     window.addEventListener('scroll', this.handleScroll);
   }
-
   componentWillUnmount() {
     window.removeEventListener('scroll', this.handleScroll);
   }
 
   handleScroll() {
-    if (window.scrollY > 80) {
-      this.setState({ navDark: true });
-    } else {
-      this.setState({ navDark: false });
-    }
-  }
-
-  handleSignOut() {
-    console.log('Sign out clicked');
-    signOut(auth)
-      .then(() => {
-        console.log('Signed out');
-        window.location.href = '/login'; // simple redirect
-      })
-      .catch((error) => {
-        console.error('Sign out error:', error);
-      });
+    this.setState({ navDark: window.scrollY > 80 });
   }
 
   render() {
@@ -71,7 +49,13 @@ class Navbar extends Component {
               <button
                 type="button"
                 className="dropdown__signout"
-                onClick={this.handleSignOut}
+                onClick={async () => {
+                  try {
+                    await logout();     
+                  } finally {
+                    window.location.href = '/login';
+                  }
+                }}
               >
                 Sign Out of Netflix
               </button>

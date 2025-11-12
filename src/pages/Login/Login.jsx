@@ -3,14 +3,15 @@ import './Login.css';
 import logo from '../../assets/logo.png';
 import { login, signup } from '../../firebase';
 import netflix_spinner from '../../assets/netflix_spinner.gif';
+import { useNavigate } from 'react-router-dom';
 
-
-const Login = () => {
+function Login() {
   const [signState, setSignState] = useState('Sign In');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const user_auth = async (event) => {
     event.preventDefault();
@@ -18,15 +19,19 @@ const Login = () => {
     try {
       if (signState === 'Sign In') {
         await login(email, password);
+        console.log("✅ SIGN IN OK");
       } else {
         await signup(name, email, password);
+        console.log("✅ SIGN UP OK");
       }
+      navigate('/', { replace: true });
+    } catch (e) {
+      console.error('auth error', e);
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ full, correct JSX structure
   return loading ? (
     <div className="login-spinner">
       <img src={netflix_spinner} alt="Loading..." />
@@ -34,7 +39,6 @@ const Login = () => {
   ) : (
     <div className="login">
       <img src={logo} className="login-logo" alt="Netflix logo" />
-
       <div className="login-form">
         <h1>{signState}</h1>
 
@@ -47,21 +51,18 @@ const Login = () => {
               placeholder="Your name"
             />
           )}
-
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             placeholder="Email"
           />
-
           <input
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             type="password"
             placeholder="Password"
           />
-
           <button type="submit">{signState}</button>
 
           <div className="form-help">
@@ -73,7 +74,6 @@ const Login = () => {
           </div>
         </form>
 
-        {/* ✅ This section caused your previous “Unterminated JSX” errors */}
         <div className="form-switch">
           {signState === 'Sign In' ? (
             <p>
@@ -90,9 +90,10 @@ const Login = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Login;
+
 
 
 
